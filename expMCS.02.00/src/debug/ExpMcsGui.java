@@ -30,6 +30,7 @@ public class ExpMcsGui extends JFrame {
     private final JTextField latticeTypeField = new JTextField("2");
     private final JTextField mcssField = new JTextField("4000");
     private final JTextField warmupField = new JTextField("1000");
+    private final JTextField ecdisField = new JTextField();
     private final JCheckBox writeFileBox = new JCheckBox("Write result file", true);
     private final JButton runButton = new JButton("Run Simulation");
     private final JTextArea outputArea = new JTextArea(16, 72);
@@ -55,6 +56,8 @@ public class ExpMcsGui extends JFrame {
         form.add(mcssField);
         form.add(new JLabel("Warmup MCSS"));
         form.add(warmupField);
+        form.add(new JLabel("ECIs (comma-separated ecdis)"));
+        form.add(ecdisField);
         form.add(new JLabel("Output"));
         form.add(writeFileBox);
 
@@ -69,8 +72,10 @@ public class ExpMcsGui extends JFrame {
         add(form, BorderLayout.NORTH);
         add(bottom, BorderLayout.CENTER);
 
+        phaseCombo.addActionListener(e -> updateEcdisHint());
         runButton.addActionListener(e -> runSimulationFromForm());
 
+        updateEcdisHint();
         pack();
         setLocationRelativeTo(null);
     }
@@ -82,6 +87,22 @@ public class ExpMcsGui extends JFrame {
         });
     }
 
+    private void updateEcdisHint() {
+        String phase = String.valueOf(phaseCombo.getSelectedItem());
+        ecdisField.setText(formatEcdis(RunEXPMCS.defaultEcdisForPhase(phase)));
+    }
+
+    private String formatEcdis(double[] ecdis) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ecdis.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(ecdis[i]);
+        }
+        return sb.toString();
+    }
+
     private void runSimulationFromForm() {
         final String phase = String.valueOf(phaseCombo.getSelectedItem());
         final double temperature;
@@ -90,6 +111,7 @@ public class ExpMcsGui extends JFrame {
         final int latticeType;
         final int mcss;
         final int warmup;
+        final double[] ecdis;
         final boolean writeToFile = writeFileBox.isSelected();
 
         try {
@@ -99,9 +121,10 @@ public class ExpMcsGui extends JFrame {
             latticeType = Integer.parseInt(latticeTypeField.getText().trim());
             mcss = Integer.parseInt(mcssField.getText().trim());
             warmup = Integer.parseInt(warmupField.getText().trim());
-        } catch (NumberFormatException ex) {
+            ecdis = parseEcdis(ecdisField.getText(), phase);
+        } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this,
-                    "Please enter valid numeric values for all fields.",
+                    ex.getMessage(),
                     "Input Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -109,14 +132,15 @@ public class ExpMcsGui extends JFrame {
 
         runButton.setEnabled(false);
         outputArea.setText("Running simulation...\n");
-        outputArea.append("Phase=" + phase + ", T=" + temperature + ", xB=" + xB + "\n");
+        outputArea.append("Phase=" + phase + ", T=" + temperature + ", xB=" + xB
+                + ", ecdis length=" + ecdis.length + "\n");
 
         SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws IOException {
                 long beg = System.currentTimeMillis();
-                mcData data = RunEXPMCS.runSimulation(
-                        phase, temperature, xB, latticeSize, latticeType, mcss, warmup, writeToFile);
+                RunEXPMCS.runSimulation(
+                        phase, ecdis, temperature, xB, latticeSize, latticeType, mcss, warmup, writeToFile);
                 long end = System.currentTimeMillis();
                 String file = (mcData.fileName == null || mcData.fileName.length() == 0)
                         ? "(no file generated)" : mcData.fileName;
@@ -136,5 +160,27 @@ public class ExpMcsGui extends JFrame {
         };
 
         worker.execute();
+    }
+
+    private double[] parseEcdis(String text, String phase) {
+        String raw = text == null ? "" : text.trim();
+        if (raw.length() == 0) {
+            throw new IllegalArgumentException("ECIs cannot be empty.");
+        }
+        String[] tokens = raw.split(",");
+        int expected = RunEXPMCS.expectedEcdisSizeForPhase(phase);
+        if (tokens.length != expected) {
+            throw new IllegalArgumentException("Phase " + phase + " expects " + expected
+                    + " ECI values (ecdis), but got " + tokens.length + ".");
+        }
+        double[] values = new double[tokens.length];
+        try {
+            for (int i = 0; i < tokens.length; i++) {
+                values[i] = Double.parseDouble(tokens[i].trim());
+            }
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("ECIs must be comma-separated numeric values.");
+        }
+        return values;
     }
 }

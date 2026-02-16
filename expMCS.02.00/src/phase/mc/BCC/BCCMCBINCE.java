@@ -13,10 +13,11 @@ import phase.mc.PHASEMCBINCE;
  * @author metallurgy
  */
 public abstract class BCCMCBINCE extends PHASEMCBINCE {
-    //Highest symmetry phase information
 
+    //Highest symmetry phase information
+    public static final int ECDIS_SIZE = 5;
     private int coordNum = 8;//coordination number of lattice
-    private int tcdis = 5; //No of total clusters in disordred phase
+    private int tcdis = ECDIS_SIZE; //No of total clusters in disordred phase
     private int nxcdis = 1; //No of clusters realted to point cluters in disordred phase
     private int ncdis = 4;
     private double mdis[] = {4, 3, 12, 6, 1};//Multiplicities for each cluster
@@ -32,6 +33,10 @@ public abstract class BCCMCBINCE extends PHASEMCBINCE {
         setRcdis(rcdis);
         setUab(tcdis, rcdis);//Calculate and set uA and uB arrays
         prnt.writeln("BCCMCBINCE constructor method ended");
+    }
+
+    public static int getEcdisSize() {
+        return ECDIS_SIZE;
     }
 
     //Setter Methods

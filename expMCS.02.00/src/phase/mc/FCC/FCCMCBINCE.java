@@ -14,8 +14,9 @@ import phase.mc.PHASEMCBINCE;
  */
 public abstract class FCCMCBINCE extends PHASEMCBINCE {
 
+    public static final int ECDIS_SIZE = 10;
     private int coordNum = 12;//coordination number of lattice
-    private int tcdis = 10; //No of total clusters in disordred phase
+    private int tcdis = ECDIS_SIZE; //No of total clusters in disordred phase
     private int nxcdis = 1; //No of clusters realted to point cluters in disordred phase
     private int ncdis = 9;
     private double mdis[] = {6.0, 3.0, 8.0, 12.0, 2.0, 12.0, 3.0, 6.0, 1.0, 1.0};//Multiplicities for each cluster
@@ -31,6 +32,10 @@ public abstract class FCCMCBINCE extends PHASEMCBINCE {
         setRcdis(rcdis);
         setUab(tcdis, rcdis);//Calculate and set uA and uB arrays
         prnt.writeln("FCCMCBINCE constructor method ended");
+    }
+
+    public static int getEcdisSize() {
+        return ECDIS_SIZE;
     }
 
     //Setter Methods
