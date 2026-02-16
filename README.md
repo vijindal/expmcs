@@ -26,7 +26,7 @@ From repository root:
 
 ```bash
 ./gradlew clean build
-./gradlew run
+./gradlew run   # launches GUI
 ```
 
 On Windows CMD/PowerShell:
@@ -42,8 +42,18 @@ If wrapper is not available yet, you can still compile and run directly:
 
 ```bash
 javac -d /tmp/expmcs-build $(rg --files expMCS.02.00/src | tr '\n' ' ')
-java -cp /tmp/expmcs-build debug.RunEXPMCS
+java -cp /tmp/expmcs-build debug.RunEXPMCS        # GUI
+java -cp /tmp/expmcs-build debug.RunEXPMCS --cli  # legacy CLI demo
 ```
+
+
+## Application modes
+
+- **GUI (default):** running `debug.RunEXPMCS` opens a Swing window for entering phase and simulation parameters.
+- **CLI (legacy):** run `debug.RunEXPMCS --cli` to execute the previous command-line demo flow.
+- GUI now includes an **ECIs (`ecdis`)** input field (comma-separated).
+  - FCC phases (`A1`, `L10`, `L12`) require **10** values.
+  - BCC phase (`A2`) requires **5** values.
 
 ## Recommended short roadmap
 
