@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['expMCS.02.00/src']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['expMCS.02.00/test']
+        }
+    }
+}
+
+application {
+    mainClass = 'debug.RunEXPMCS'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
