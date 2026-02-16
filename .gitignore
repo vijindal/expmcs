@@ -1,0 +1,11 @@
+# NetBeans local/project cache
+nbproject/private/
+nbproject/cache/
+nbproject/private.properties
+
+# Build output
+build/
+dist/
+
+# Java artifacts
+*.class
