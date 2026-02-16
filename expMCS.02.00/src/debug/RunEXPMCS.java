@@ -74,7 +74,8 @@ public class RunEXPMCS {
         double xB = x_In;
         PHASEMCBINCE l10mcbince = new L10MCBINCE(eFCC, T, xB, size, latticeType);
         l10mcbince.printPhaseInfo();
-        mcSampler mcsampler = new mcSampler(4000, 1000, l10mcbince);
+        mcSampler mcsampler = new mcSampler(100, 100, l10mcbince);
+        //mcSampler mcsampler = new mcSampler(4000, 1000, l10mcbince);
         mcsampler.printSamplerInfo();
         mcData mcdata = mcsampler.runMC();
         mcdata.calStat();

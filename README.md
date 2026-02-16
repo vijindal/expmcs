@@ -67,3 +67,8 @@ git push -u origin <task-branch>
 ```
 
 Then open a PR on GitHub and merge after review.
+
+Then sync local:
+git checkout master
+git pull origin master
+git branch -d <task-branch>
