@@ -1,5 +1,6 @@
 package debug;
 
+import io.prnt;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.io.IOException;
@@ -31,6 +32,8 @@ public class ExpMcsGui extends JFrame {
     private final JTextField mcssField = new JTextField("4000");
     private final JTextField warmupField = new JTextField("1000");
     private final JTextField ecdisField = new JTextField();
+    private final JComboBox<String> loggingCombo = new JComboBox<>(new String[]{"Quiet", "Normal", "Verbose"});
+    private final JCheckBox quickRunBox = new JCheckBox("Quick-run preset (faster dev checks)", false);
     private final JCheckBox writeFileBox = new JCheckBox("Write result file", true);
     private final JButton runButton = new JButton("Run Simulation");
     private final JTextArea outputArea = new JTextArea(16, 72);
@@ -58,6 +61,10 @@ public class ExpMcsGui extends JFrame {
         form.add(warmupField);
         form.add(new JLabel("ECIs (comma-separated ecdis)"));
         form.add(ecdisField);
+        form.add(new JLabel("Logging"));
+        form.add(loggingCombo);
+        form.add(new JLabel("Preset"));
+        form.add(quickRunBox);
         form.add(new JLabel("Output"));
         form.add(writeFileBox);
 
@@ -72,9 +79,20 @@ public class ExpMcsGui extends JFrame {
         add(form, BorderLayout.NORTH);
         add(bottom, BorderLayout.CENTER);
 
-        phaseCombo.addActionListener(e -> updateEcdisHint());
+        phaseCombo.addActionListener(e -> {
+            updateEcdisHint();
+            if (quickRunBox.isSelected()) {
+                applyQuickRunPreset();
+            }
+        });
+        quickRunBox.addActionListener(e -> {
+            if (quickRunBox.isSelected()) {
+                applyQuickRunPreset();
+            }
+        });
         runButton.addActionListener(e -> runSimulationFromForm());
 
+        loggingCombo.setSelectedItem("Normal");
         updateEcdisHint();
         pack();
         setLocationRelativeTo(null);
@@ -85,6 +103,15 @@ public class ExpMcsGui extends JFrame {
             ExpMcsGui gui = new ExpMcsGui();
             gui.setVisible(true);
         });
+    }
+
+    private void applyQuickRunPreset() {
+        latticeSizeField.setText("8");
+        mcssField.setText("80");
+        warmupField.setText("20");
+        String phase = String.valueOf(phaseCombo.getSelectedItem());
+        latticeTypeField.setText("L10".equalsIgnoreCase(phase) ? "2" : "1");
+        writeFileBox.setSelected(false);
     }
 
     private void updateEcdisHint() {
@@ -103,6 +130,17 @@ public class ExpMcsGui extends JFrame {
         return sb.toString();
     }
 
+    private int selectedLogLevel() {
+        String selected = String.valueOf(loggingCombo.getSelectedItem());
+        if ("Quiet".equalsIgnoreCase(selected)) {
+            return prnt.LOG_QUIET;
+        }
+        if ("Verbose".equalsIgnoreCase(selected)) {
+            return prnt.LOG_VERBOSE;
+        }
+        return prnt.LOG_NORMAL;
+    }
+
     private void runSimulationFromForm() {
         final String phase = String.valueOf(phaseCombo.getSelectedItem());
         final double temperature;
@@ -113,6 +151,7 @@ public class ExpMcsGui extends JFrame {
         final int warmup;
         final double[] ecdis;
         final boolean writeToFile = writeFileBox.isSelected();
+        final int logLevel = selectedLogLevel();
 
         try {
             temperature = Double.parseDouble(temperatureField.getText().trim());
@@ -133,19 +172,20 @@ public class ExpMcsGui extends JFrame {
         runButton.setEnabled(false);
         outputArea.setText("Running simulation...\n");
         outputArea.append("Phase=" + phase + ", T=" + temperature + ", xB=" + xB
-                + ", ecdis length=" + ecdis.length + "\n");
+                + ", ecdis length=" + ecdis.length + ", quickRun=" + quickRunBox.isSelected() + "\n");
 
         SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
             @Override
             protected String doInBackground() throws IOException {
                 long beg = System.currentTimeMillis();
+                prnt.setLogLevel(logLevel);
                 RunEXPMCS.runSimulation(
                         phase, ecdis, temperature, xB, latticeSize, latticeType, mcss, warmup, writeToFile);
                 long end = System.currentTimeMillis();
                 String file = (mcData.fileName == null || mcData.fileName.length() == 0)
                         ? "(no file generated)" : mcData.fileName;
                 return "Simulation completed in " + ((end - beg) / 1000.0)
-                        + " sec.\nOutput file: " + file + "\nSee console for detailed MC trace.";
+                        + " sec.\nOutput file: " + file + "\nSee console for MC trace (depends on logging level).";
             }
 
             @Override

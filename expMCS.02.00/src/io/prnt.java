@@ -12,12 +12,24 @@ import java.text.DecimalFormat;
 public class prnt {
 
     public static int pr2F = 3;
-    public static int logLevelParam = 0;
+    // public static int logLevelParam = 0;
+    public static final int LOG_QUIET = 0;
+    public static final int LOG_NORMAL = 1;
+    public static final int LOG_VERBOSE = 2;
+    public static int logLevelParam = LOG_NORMAL;
     public static String nl = System.getProperty("line.separator");
     static DecimalFormat df = new DecimalFormat("#.######");
     public static char nt = '\t';
     //public static final int pr2F = 1;// 0 for nothing, 1 for console, 2 for file, 3 for both console & file
 
+    
+    public static void setLogLevel(int logLevel) {
+        logLevelParam = logLevel;
+    }
+
+    public static int getLogLevel() {
+        return logLevelParam;
+    }
     public static void write(String str, int loglevel) throws IOException {
         if (loglevel <= logLevelParam) {
             System.out.print(str);

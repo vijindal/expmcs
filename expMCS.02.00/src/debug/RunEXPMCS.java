@@ -1,6 +1,7 @@
 package debug;
 
 import java.io.IOException;
+import io.prnt;
 import mcSampler.mcData;
 import mcSampler.mcSampler;
 import phase.mc.BCC.A2MCBINCE;
@@ -43,7 +44,9 @@ public class RunEXPMCS {
             int latticeSize, int latticeType, int mcss, int warmup, boolean printToFile)
             throws IOException {
         PHASEMCBINCE phase = createPhase(phaseName, ecdis, temperature, xB, latticeSize, latticeType);
-        phase.printPhaseInfo();
+        if (prnt.getLogLevel() >= prnt.LOG_NORMAL) {
+            phase.printPhaseInfo();
+        }
         mcSampler sampler = new mcSampler(mcss, warmup, phase);
         sampler.printSamplerInfo();
         mcData data = sampler.runMC();
