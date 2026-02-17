@@ -119,7 +119,10 @@ public class mcSampler {
         mcData mcdata = new mcData(mc_NDP, phasemcbince_local);
         startTime = System.currentTimeMillis();
         if (mcMethod.equals("exchange")) {
-            System.out.println("exchange method");
+            //System.out.println("exchange method");
+            if (isNormalLogging()) {
+                System.out.println("exchange method");
+            }
             for (int counter = 0; counter < (mc_WARMMCSS); counter++) {//Equilibrium MCSS
                 int MCS = 0;// Begining of One mc_MCSS
                 for (int i = 0; i < mc_NLP; i++) {
@@ -128,7 +131,10 @@ public class mcSampler {
 //                while (MCS < mc_NLP) {//Counting only performed MCS
 //                    MCS = MCS + MCSTEP_exchange();// Completion of one mc_MCSS
 //                }
-                System.out.println("Warm MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                // System.out.println("Warm MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                if (isVerboseLogging()) {
+                    System.out.println("Warm MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                }
             }
             for (int counter = 0; counter < (mc_MCSS); counter++) {
                 int MCS = 0;// Begining of One mc_MCSS
@@ -141,25 +147,37 @@ public class mcSampler {
                 if ((counter % mc_samplingInterval == 0)) {//data output step
                     int counter2 = (int) ((counter) / mc_samplingInterval);
                     mc_u_array[counter2] = phasemcbince_local.calU();
-                    System.out.println("MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                    // System.out.println("MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                    if (isNormalLogging()) {
+                        System.out.println("MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                    }
                     //prnt.list(mc_u_array[counter2], "u");
                 }//END of if loop for data output
             }
         }
 
         if (mcMethod.equals("flip")) {
-            System.out.println("flip method");
+            // System.out.println("flip method");
+            if (isNormalLogging()) {
+                System.out.println("flip method");
+            }
             for (int counter = 0; counter < (mc_WARMMCSS + mc_MCSS); counter++) {
                 int MCS = 0;// Begining of One mc_MCSS
                 for (int i = 0; i < mc_NLP; i++) {
                     MCS = MCS + MCSTEP_flip();// Completion of one mc_MCSS
                 }
                 if (counter < mc_WARMMCSS) {
-                    System.out.println("mc_MCSS no.=" + counter);
+                    // System.out.println("mc_MCSS no.=" + counter);
+                    if (isVerboseLogging()) {
+                        System.out.println("mc_MCSS no.=" + counter);
+                    }
                 } else if ((counter % mc_samplingInterval == 0)) {//data output step
                     int counter2 = (int) ((counter - mc_WARMMCSS) / mc_samplingInterval);
                     mc_u_array[counter2] = phasemcbince_local.calU();
-                    System.out.println("mc_MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                    // System.out.println("mc_MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                    if (isNormalLogging()) {
+                        System.out.println("mc_MCSS no.=" + counter + ", Performed Steps=" + MCS);
+                    }
                 }//END of if loop for data output
             }
         }
@@ -192,7 +210,6 @@ public class mcSampler {
         int site2 = phasemcbince_local.getSiteOperator(siteCoord2);
         //System.out.println("Site1 Coordinate:" + siteCoord1[0] + "," + siteCoord1[1] + "," + siteCoord1[2] + "," + site1);
         //System.out.println("Site2 Coordinate:" + siteCoord2[0] + "," + siteCoord2[1] + "," + siteCoord2[2] + "," + site2);
-
 
         //------STEP 2: CALCULATION OF dE=E(*)-E(i) -----------------------------
         if (site1 != site2) {
@@ -259,7 +276,18 @@ public class mcSampler {
         return (performed);
     }
 
+    private boolean isNormalLogging() {
+        return prnt.getLogLevel() >= prnt.LOG_NORMAL;
+    }
+
+    private boolean isVerboseLogging() {
+        return prnt.getLogLevel() >= prnt.LOG_VERBOSE;
+    }
+
     public void printSamplerInfo() {
+        if (!isNormalLogging()) {
+            return;
+        }
         System.out.println("-------------mcSampler Parameters--------------------");
         System.out.println("           warm mcss: " + mc_WARMMCSS);
         System.out.println("                mcss: " + mc_MCSS);
